@@ -4,9 +4,10 @@ require_relative 'name.rb'
 
 class Turn
 attr_reader :player, :column, :player_piece
-  def initialize(player, column)
+  def initialize(player, column, game_board)
     @player = player
     @column = column
+    @board = game_board
     player_conversion
     column_conversion
     drop
@@ -39,40 +40,88 @@ attr_reader :player, :column, :player_piece
   end
 
   def drop
-    print @board
-    # if @board[5][@column] == "-"
-    #   @board[5][@column] = @player_piece
-    # elsif @board[4][@column] == "-"
-    #   @board[4][@column] = @player_piece
-    # elsif @board[3][@column] == "-"
-    #   @board[3][@column] = @player_piece
-    # elsif @board[2][@column] == "-"
-    #   @board[2][@column] = @player_piece
-    # elsif @board[1][@column] == "-"
-    #   @board[1][@column] = @player_piece
-    # elsif @board[0][@column] == "-"
-    #   @board[0][@column] = @player_piece
-    # else return nil
-    # end
+    empty_slot = nil
+    @board.rows.each_with_index do |row, index|
+      # This probably needs to be reversed
+      if row[@column] == "-"
+        empty_slot = index
+        break
+      end
+      break
+    end
+    if empty_slot == nil
+      return nil
+    else
+      play = @board.rows[empty_slot][@column]
+      @board.rows[empty_slot][@column] = @player_piece
+      return play
+    end
   end
 
-  def winner?
+  def row_win
+    win = false
+    row_count = 0
+    pl1_piece_count = 0 # "X"
+    pl2_piece_count = 0 # "O"
+    while win == false
+      @board.rows[row_count].each do |slot|
 
+        if slot == "X"
+          pl1_piece_count += 1
+          pl2_piece_count = 0
+        elsif slot == "O"
+          pl2_piece_count += 1
+          pl1_piece_count = 0
+        elsif slot == "-"
+          pl1_piece_count = 0
+          pl2_piece_count = 0
+        end
+
+        if pl1_piece_count == 4 || if pl2_piece_count == 4
+          win = true
+        end
+
+      end
+      row_count += 1
+    end
+    win
   end
 
+  def column_win
+    win = false
+    row_count = 0
+    pl1_piece_count = 0 # "X"
+    pl2_piece_count = 0 # "O"
+    while win == false
+      @board.rows[row_count][0].each do |slot|
+        if slot == "X"
+          pl1_piece_count += 1
+          pl2_piece_count = 0
+        elsif slot == "O"
+          pl2_piece_count += 1
+          pl1_piece_count = 0
+        elsif slot == "-"
+          pl1_piece_count = 0
+          pl2_piece_count = 0
+        end
+        if pl1_piece_count == 4 || if pl2_piece_count == 4
+          win = true
+        end
+      end
+      row_count += 1
+    end
+    win
+  end
+
+  def game_won?
+    game_winner = false
+    if row_win == true || column_win == true
+      if pl1_piece_count > pl2_piece_count
+        game_winner = 1
+      elsif pl2_piece_count > pl1_piece_count
+        game_winner = 2
+      end
+    end
+    game_winner
+  end
 end
-
-# player chooses column
-# turn places correct game piece in the first available slot
-# game checks for a win
-#   if there is a win, game stops and winner is announced
-# return the game board for the next player to choose
-# board[5][0]
-# [
-#   [" - ", " - ", nil, nil, nil, nil, nil],
-#   [" - ", " - ", nil, nil, nil, nil, nil],
-#   [" - ", " - ", nil, nil, nil, nil, nil],
-#   [" - ", " - ", nil, nil, nil, nil, nil],
-#   [" - ", " - ", nil, nil, nil, nil, nil],
-#   ['X', " - ", nil, nil, nil, nil, nil]
-# ]
